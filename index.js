@@ -25,12 +25,19 @@ async function run() {
         //7
         await client.connect();
         const toolsCollection = client.db("plumbtion-manufacturer").collection("tools");
+        const reviewsCollection = client.db("plumbtion-manufacturer").collection("reviews");
 
         //8 get tool 
         app.get('/tool' , async(req,res) => {
             const query = {}
             const tools = await toolsCollection.find(query).toArray()
             res.send(tools)
+        })
+        //9 get reviews 
+        app.get('/review' , async(req,res) => {
+            const query = {}
+            const reviews = await reviewsCollection.find(query).toArray()
+            res.send(reviews)
         })
 
     }
