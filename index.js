@@ -88,6 +88,14 @@ async function run() {
             res.send(result)
         })
 
+        //24 delete product (pipe) 
+        app.delete('/tool/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const tools = await toolsCollection.deleteOne(query)
+            res.send(tools)
+        })
+
         //10 get orders
         app.post('/order', async (req, res) => {
             const order = req.body
