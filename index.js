@@ -74,6 +74,14 @@ async function run() {
             res.send(orders);
         })
 
+        //13 delete my order
+        app.delete('/order/:email', async (req, res) => {
+            const email = req.params.email
+            const filter = {email : email}
+            const result = await ordersCollection.deleteOne(filter)
+            res.send(result)
+        })
+
 
         // get reviews 
         app.get('/review', async (req, res) => {
