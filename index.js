@@ -81,6 +81,13 @@ async function run() {
             res.send(tool)
         })
 
+        //23 add tool (pipes)
+        app.post('/tool', verifyJWT, verifyAdmin, async (req, res) => {
+            const pipe = req.body
+            const result = await toolsCollection.insertOne(pipe)
+            res.send(result)
+        })
+
         //10 get orders
         app.post('/order', async (req, res) => {
             const order = req.body
@@ -203,7 +210,7 @@ async function run() {
         })
 
         //22 post reviews
-        app.post('/review', async (req, res) => {
+        app.post('/review',verifyJWT, async (req, res) => {
             const review = req.body
             const result = await reviewsCollection.insertOne(review)
             res.send(result)
