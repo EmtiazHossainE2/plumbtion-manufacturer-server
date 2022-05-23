@@ -51,6 +51,21 @@ async function run() {
         const ordersCollection = client.db("plumbtion-manufacturer").collection("orders");
         const usersCollection = client.db("plumbtion-manufacturer").collection("users");
 
+
+        // 18 ( middleware ) verify admin 
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email
+            const requesterAccount = await usersCollection.findOne({ email: requester })
+            if (requesterAccount.role === 'admin') {
+                next()
+            }
+            else {
+                res.status(403).send({ message: 'Forbidden Access' });
+            }
+        }
+
+        // ***    Tools (pipes)        **//
+
         //8 get tool 
         app.get('/tool', async (req, res) => {
             const query = {}
@@ -88,6 +103,10 @@ async function run() {
             res.send(result)
         })
 
+        
+        
+        // ***    Order        **//
+
         //12 read my orders (get)
         app.get('/order',verifyJWT, async (req, res) => {
             const email = req.query.email;
@@ -111,6 +130,10 @@ async function run() {
             res.send(result)
         })
 
+
+
+        // ***    User        **//
+
         //15  user create or update 
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
@@ -124,6 +147,53 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
             res.send({ result, token })
         })
+
+        //16 get users 
+        app.get('/user',verifyJWT, async (req, res) => {
+            const users = await usersCollection.find().toArray()
+            res.send(users)
+        })
+
+        //17 make admin 
+        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: {role : 'admin'}
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+
+        app.put('/user/user/:email', verifyJWT, verifyAdmin, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: {role : 'user'}
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+
+        // 19 check admin
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email
+            const user = await usersCollection.findOne({ email: email })
+            const isAdmin = user?.role === 'admin'
+            res.send({ admin: isAdmin })
+        })
+
+        //20 delete user/admin
+        app.delete('/user/:email', verifyJWT, verifyAdmin, async (req, res) => {
+            const email = req.params.email
+            const filter = {email : email}
+            const result = await usersCollection.deleteOne(filter)
+            res.send(result)
+        })
+
+
+
+        // ***    Review        **//
 
         // get reviews 
         app.get('/review', async (req, res) => {
