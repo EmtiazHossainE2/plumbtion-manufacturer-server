@@ -29,7 +29,7 @@ async function run() {
         const ordersCollection = client.db("plumbtion-manufacturer").collection("orders");
 
         //8 get tool 
-        app.get('/tool' , async(req,res) => {
+        app.get('/tool', async (req, res) => {
             const query = {}
             const tools = await toolsCollection.find(query).toArray()
             res.send(tools)
@@ -44,8 +44,8 @@ async function run() {
         })
 
         //10 get orders
-        app.post('/order' , async(req,res) => {
-            const order = req.body 
+        app.post('/order', async (req, res) => {
+            const order = req.body
             const result = await ordersCollection.insertOne(order)
             res.send(result)
         })
@@ -65,12 +65,18 @@ async function run() {
             res.send(result)
         })
 
+        //12 read my orders 
 
-
+        app.get('/order', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const orders = await ordersCollection.find(query).toArray();
+            res.send(orders);
+        })
 
 
         // get reviews 
-        app.get('/review' , async(req,res) => {
+        app.get('/review', async (req, res) => {
             const query = {}
             const reviews = await reviewsCollection.find(query).toArray()
             res.send(reviews)
