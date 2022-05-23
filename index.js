@@ -3,6 +3,7 @@ const express = require('express');
 const app = express()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
+const jwt = require('jsonwebtoken');
 
 //3
 const cors = require('cors')
@@ -19,6 +20,27 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 // console.log(uri);
 
+
+//14 jwt 
+const verifyJWT = (req, res, next) => {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send({ message: 'Unauthorized Access' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden Access' });
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
+
+
+
+
 //6
 async function run() {
     try {
@@ -27,6 +49,7 @@ async function run() {
         const toolsCollection = client.db("plumbtion-manufacturer").collection("tools");
         const reviewsCollection = client.db("plumbtion-manufacturer").collection("reviews");
         const ordersCollection = client.db("plumbtion-manufacturer").collection("orders");
+        const usersCollection = client.db("plumbtion-manufacturer").collection("users");
 
         //8 get tool 
         app.get('/tool', async (req, res) => {
@@ -65,23 +88,42 @@ async function run() {
             res.send(result)
         })
 
-        //12 read my orders 
-
-        app.get('/order', async (req, res) => {
+        //12 read my orders (get)
+        app.get('/order',verifyJWT, async (req, res) => {
             const email = req.query.email;
-            const query = { email: email };
-            const orders = await ordersCollection.find(query).toArray();
-            res.send(orders);
+            const decodedEmail = req.decoded.email
+            if (email === decodedEmail) {
+                const query = { email: email };
+                const orders = await ordersCollection.find(query).toArray();
+                res.send(orders);
+            }
+            else {
+                return res.status(403).send({ message: 'Forbidden Access' });
+            }
+
         })
 
         //13 delete my order
         app.delete('/order/:email', async (req, res) => {
             const email = req.params.email
-            const filter = {email : email}
+            const filter = { email: email }
             const result = await ordersCollection.deleteOne(filter)
             res.send(result)
         })
 
+        //15  user create or update 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const user = req.body;
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: user
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc, options)
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
+            res.send({ result, token })
+        })
 
         // get reviews 
         app.get('/review', async (req, res) => {
