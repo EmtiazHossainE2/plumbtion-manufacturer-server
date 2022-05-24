@@ -96,13 +96,6 @@ async function run() {
             res.send(tools)
         })
 
-        //10 get orders
-        app.post('/order', async (req, res) => {
-            const order = req.body
-            const result = await ordersCollection.insertOne(order)
-            res.send(result)
-        })
-
         //11 available tool (pipe) update
         app.put('/tool/:id', async (req, res) => {
             const id = req.params.id
@@ -121,6 +114,13 @@ async function run() {
         
         
         // ***    Order        **//
+
+        //10 get orders
+        app.post('/order', async (req, res) => {
+            const order = req.body
+            const result = await ordersCollection.insertOne(order)
+            res.send(result)
+        })
 
         //12 read my orders (get)
         app.get('/order',verifyJWT, async (req, res) => {
@@ -143,6 +143,13 @@ async function run() {
             const filter = { email: email }
             const result = await ordersCollection.deleteOne(filter)
             res.send(result)
+        })
+
+        //25 get all orders
+        app.get('/all-order',verifyJWT,verifyAdmin, async (req, res) => {
+            const query = {}
+            const allOrder = await ordersCollection.find(query).toArray()
+            res.send(allOrder)
         })
 
 
