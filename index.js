@@ -111,8 +111,8 @@ async function run() {
             res.send(result)
         })
 
-        
-        
+
+
         // ***    Order        **//
 
         //10 get orders
@@ -123,7 +123,7 @@ async function run() {
         })
 
         //12 read my orders (get)
-        app.get('/order',verifyJWT, async (req, res) => {
+        app.get('/order', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email
             if (email === decodedEmail) {
@@ -146,7 +146,7 @@ async function run() {
         })
 
         //25 get all orders
-        app.get('/all-order',verifyJWT,verifyAdmin, async (req, res) => {
+        app.get('/all-order', verifyJWT, verifyAdmin, async (req, res) => {
             const query = {}
             const allOrder = await ordersCollection.find(query).toArray()
             res.send(allOrder)
@@ -171,16 +171,30 @@ async function run() {
         })
 
         //16 get users 
-        app.get('/user',verifyJWT, async (req, res) => {
+        app.get('/user', verifyJWT, async (req, res) => {
             const users = await usersCollection.find().toArray()
             res.send(users)
         })
 
         //26 Profile 
-        app.get('/profile/:email',verifyJWT, async (req, res) => {
+        app.get('/profile/:email', verifyJWT, async (req, res) => {
             const email = req.params.email
             const profile = await usersCollection.findOne({ email: email })
             res.send(profile)
+        })
+
+        //27 update profile
+        app.put('/profile/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id
+            const updateInfo = req.body
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: updateInfo
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            res.send(result)
+
         })
 
         //17 make admin 
@@ -188,7 +202,7 @@ async function run() {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
-                $set: {role : 'admin'}
+                $set: { role: 'admin' }
             };
             const result = await usersCollection.updateOne(filter, updateDoc)
             res.send(result)
@@ -198,7 +212,7 @@ async function run() {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
-                $set: {role : 'user'}
+                $set: { role: 'user' }
             };
             const result = await usersCollection.updateOne(filter, updateDoc)
             res.send(result)
@@ -215,7 +229,7 @@ async function run() {
         //20 delete user/admin
         app.delete('/user/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email
-            const filter = {email : email}
+            const filter = { email: email }
             const result = await usersCollection.deleteOne(filter)
             res.send(result)
         })
@@ -232,7 +246,7 @@ async function run() {
         })
 
         //22 post reviews
-        app.post('/review',verifyJWT, async (req, res) => {
+        app.post('/review', verifyJWT, async (req, res) => {
             const review = req.body
             const result = await reviewsCollection.insertOne(review)
             res.send(result)
