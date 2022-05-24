@@ -176,6 +176,13 @@ async function run() {
             res.send(users)
         })
 
+        //26 Profile 
+        app.get('/profile/:email',verifyJWT, async (req, res) => {
+            const email = req.params.email
+            const profile = await usersCollection.findOne({ email: email })
+            res.send(profile)
+        })
+
         //17 make admin 
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
