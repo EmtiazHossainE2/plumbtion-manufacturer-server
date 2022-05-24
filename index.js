@@ -4,6 +4,7 @@ const app = express()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
 const jwt = require('jsonwebtoken');
+const stripe = require('stripe')('sk_test_51L14pjDEsxnXfJbTlrS3grchkKNLNJquxxzz79aQiElQwp6RcnTeEJIRskV7INrmUt7vBTFS2pWMTokjKFP0nbIC00bPMze6Az')
 
 //3
 const cors = require('cors')
@@ -50,6 +51,7 @@ async function run() {
         const reviewsCollection = client.db("plumbtion-manufacturer").collection("reviews");
         const ordersCollection = client.db("plumbtion-manufacturer").collection("orders");
         const usersCollection = client.db("plumbtion-manufacturer").collection("users");
+        const paymentsCollection = client.db("plumbtion-manufacturer").collection("payments");
 
 
         // 18 ( middleware ) verify admin 
@@ -63,6 +65,19 @@ async function run() {
                 res.status(403).send({ message: 'Forbidden Access' });
             }
         }
+
+        //30 payment intent 
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const order = req.body;
+            const price = order.totalPrice;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret })
+        });
 
         // ***    Tools (pipes)        **//
 
@@ -152,6 +167,40 @@ async function run() {
             res.send(allOrder)
         })
 
+        // payment 
+        //29 get  order id 
+        app.get('/order/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const order = await ordersCollection.findOne(query)
+            res.send(order)
+        })
+
+        //31 payment 
+        app.patch('/order/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const result = await paymentsCollection.insertOne(payment);
+            const updatedBooking = await ordersCollection.updateOne(filter, updatedDoc);
+            res.send(updatedBooking,result);
+        })
+
+        //32 delete order
+        app.delete('/all-order/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id
+            const filter = { _id : ObjectId(id) }
+            const result = await ordersCollection.deleteOne(filter)
+            res.send(result)
+        })
+
+
 
 
         // ***    User        **//
@@ -208,8 +257,8 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updateDoc, options);
             res.send(result)
         })
-        
-        
+
+
 
         //17 make admin 
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
