@@ -200,6 +200,17 @@ async function run() {
             res.send(result)
         })
 
+        //33 shipped
+        app.put('/all-order/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id : ObjectId(id)};
+            const updateDoc = {
+                $set: { process: 'Shipped' }
+            };
+            const result = await ordersCollection.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+
 
 
 
@@ -259,7 +270,6 @@ async function run() {
         })
 
 
-
         //17 make admin 
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
@@ -298,7 +308,6 @@ async function run() {
         })
 
 
-
         // ***    Review        **//
 
         //21 get reviews 
@@ -314,14 +323,12 @@ async function run() {
             const result = await reviewsCollection.insertOne(review)
             res.send(result)
         })
-
     }
     finally {
         //   await client.close();
     }
 }
 run().catch(console.dir);
-
 
 
 //2
