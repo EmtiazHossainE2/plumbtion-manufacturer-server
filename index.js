@@ -243,6 +243,13 @@ async function run() {
             res.send(profile)
         })
 
+        //34 get user img 
+        app.get('/profile-img/:email',verifyJWT,  async (req, res) => {
+            const email = req.params.email
+            const profile = await usersCollection.findOne({ email: email })
+            res.send(profile)
+        })
+
         //27 update profile
         app.put('/profile/:id', verifyJWT, async (req, res) => {
             const id = req.params.id
