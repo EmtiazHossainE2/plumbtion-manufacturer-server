@@ -1,7 +1,7 @@
 #  Welcome to Plumbtion Manufacture Website 
 
 
-## [Client Repo](https://github.com/programming-hero-web-course1/manufacturer-website-client-side-EmtiazHossainE2)
+## [Client Repo](https://github.com/EmtiazHossainE2/plumbtion-manufacturer.git)
 
 
 ## [Live Link](https://plumbtion-manufacturer.web.app/)
