@@ -330,6 +330,16 @@ async function run() {
             const result = await reviewsCollection.insertOne(review)
             res.send(result)
         })
+
+        //34 delete review
+        app.delete('/review/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id
+            const filter = { _id : ObjectId(id) }
+            const result = await reviewsCollection.deleteOne(filter)
+            res.send(result)
+        })
+
+
     }
     finally {
         //   await client.close();
