@@ -16,10 +16,12 @@ app.use(express.json())
 
 //5 
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.emoo7.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.bvrdneg.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 // console.log(uri);
+
+
 
 
 //14 jwt 
@@ -189,7 +191,7 @@ async function run() {
             }
             const result = await paymentsCollection.insertOne(payment);
             const updatedBooking = await ordersCollection.updateOne(filter, updatedDoc);
-            res.send(updatedBooking,result);
+            res.status(updatedBooking,result);
         })
 
         //32 delete order
